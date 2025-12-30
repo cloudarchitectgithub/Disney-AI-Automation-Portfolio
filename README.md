@@ -10,12 +10,12 @@ This portfolio was built specifically to demonstrate capabilities for the **Disn
 - Security vulnerability ownership and prioritization
 - N8N based agentic AI platform integration
 - Schema agnostic data access layers
-- Human in the-loop decision making
+- Human in the loop decision making
 
 ## 📁 Project Structure
 
 ```
-AI-Automation-Portfolio/
+Disney-AI-Automation-Portfolio/
 ├── Project1/          # Autonomous SRE Incident Triage Agent
 ├── Project2/          # Multi Cloud Cost Optimization Agent
 ├── Project3/          # Security Vulnerability Management Agent
