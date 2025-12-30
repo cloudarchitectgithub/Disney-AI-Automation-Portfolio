@@ -1,0 +1,263 @@
+
+services:
+  # N8N Workflow Automation Platform
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: sre-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=disney2024
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/New_York
+      - N8N_METRICS=true
+      - N8N_SECURE_COOKIE=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./Project1/n8n/workflows:/data/workflows
+    networks:
+      - sre-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChromaDB Vector Database for RAG
+  chromadb:
+    build:
+      context: ./chromadb
+      dockerfile: Dockerfile
+    container_name: sre-chromadb
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - sre-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Python Backend API (Project 1)
+  python-backend:
+    build:
+      context: ./Project1/backend
+      dockerfile: Dockerfile
+    container_name: sre-backend
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+      - ENVIRONMENT=development
+    volumes:
+      - ./Project1/backend:/app
+      - ./Project1/data:/app/data
+      - ./Project1/docs:/app/docs
+    networks:
+      - sre-network
+    depends_on:
+      chromadb:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Simple Dashboard (Streamlit) - Project 1
+  dashboard:
+    build:
+      context: ./Project1/dashboard
+      dockerfile: Dockerfile
+    container_name: sre-dashboard
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://python-backend:8001
+    volumes:
+      - ./Project1/dashboard:/app
+    networks:
+      - sre-network
+    depends_on:
+      - python-backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Cost Optimization Backend API (Project 2)
+  cost-optimization-backend:
+    build:
+      context: ./Project2/backend
+      dockerfile: Dockerfile
+    container_name: cost-optimization-backend
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      - ENVIRONMENT=development
+    volumes:
+      - ./Project2/backend:/app
+      - ./Project2/data:/app/data
+    networks:
+      - sre-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Cost Optimization Dashboard (Project 2)
+  cost-dashboard:
+    build:
+      context: ./Project2/dashboard
+      dockerfile: Dockerfile
+    container_name: cost-dashboard
+    restart: unless-stopped
+    ports:
+      - "8502:8501"
+    environment:
+      - BACKEND_URL=http://cost-optimization-backend:8002
+    volumes:
+      - ./Project2/dashboard:/app
+    networks:
+      - sre-network
+    depends_on:
+      - cost-optimization-backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Vulnerability Management Backend API (Project 3)
+  vulnerability-backend:
+    build:
+      context: ./Project3/backend
+      dockerfile: Dockerfile
+    container_name: vulnerability-backend
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    environment:
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+      - ENVIRONMENT=development
+    volumes:
+      - ./Project3/backend:/app
+      - ./Project3/data:/app/data
+    networks:
+      - sre-network
+    depends_on:
+      chromadb:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Vulnerability Dashboard (Project 3)
+  vulnerability-dashboard:
+    build:
+      context: ./Project3/dashboard
+      dockerfile: Dockerfile
+    container_name: vulnerability-dashboard
+    restart: unless-stopped
+    ports:
+      - "8503:8501"
+    environment:
+      - BACKEND_URL=http://vulnerability-backend:8003
+    volumes:
+      - ./Project3/dashboard:/app
+    networks:
+      - sre-network
+    depends_on:
+      - vulnerability-backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+networks:
+  sre-network:
+    driver: bridge
+
+volumes:
+  n8n_data:
+  chromadb_data:
+
