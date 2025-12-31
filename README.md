@@ -22,7 +22,6 @@ Disney-AI-Automation-Portfolio/
 ├── chromadb/          # Shared ChromaDB configuration
 ├── docker-compose.yml # Orchestration for all services
 ├── setup_env.sh       # Environment setup script
-└── MISC Project Files/ # Additional documentation and resources
 ```
 
 ## 🚀 Quick Start
