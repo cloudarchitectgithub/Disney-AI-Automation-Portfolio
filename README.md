@@ -36,7 +36,7 @@ Disney-AI-Automation-Portfolio/
 1. **Clone the repository**
 ```bash
 git clone <repository-url>
-cd AI-Automation-Portfolio
+cd Disney-AI-Automation-Portfolio
 ```
 
 2. **Set up environment variables**
