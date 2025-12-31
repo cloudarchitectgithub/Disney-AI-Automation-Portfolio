@@ -199,27 +199,12 @@ def generate_rag_enhanced_recommendation(self, opportunity):
     return llm_service.chat(prompt)
 ```
 
-## 💡 Interview Answer
-
-**"What framework are the AI agents built on?"**
-
-> "The AI agents are built on **N8N**, which is a low code/no code workflow automation platform. N8N serves as the orchestration layer that receives triggers, calls our FastAPI backend for analysis, and sends notifications. This makes it easy for non-developers to create and modify agent workflows."
-
-**"What is the brain that makes decisions?"**
-
-> "The decision making brain is the **CostAnalyzer**, which uses **rule based AI logic**. It analyzes cost data using intelligent algorithms that detect patterns like idle resources (CPU < 5%), over provisioned instances, and price changes. I chose rule based logic for cost optimization because it's deterministic, explainable, and fast  critical for financial decisions where you need to understand exactly why a recommendation was made."
-
-**"Where does the LLM come in?"**
-
-> "Currently, the LLM would be used for **enhancing recommendations** rather than making core decisions. The CostAnalyzer makes the decisions using rule based logic, then an LLM service could generate human readable explanations, actionable steps, and contextual recommendations. There's also a RAG service that could retrieve relevant best practices from documentation, which the LLM could then use to generate more informed recommendations. This hybrid approach rule based decisions with LLM enhanced communication provides the best of both worlds: reliable, explainable decisions with natural language explanations."
-
 ## 🎯 Key Points
 
 1. **Framework**: N8N (low code workflow automation)
 2. **Brain**: CostAnalyzer (rule based AI logic)
 3. **LLM Role**: Recommendation generation and explanation (not core decisions)
 4. **Why Rule Based**: Deterministic, explainable, fast - critical for financial decisions
-5. **Future Enhancement**: LLM could generate richer, more contextual recommendations
 
 This architecture provides reliable, explainable cost optimization decisions while leveraging LLM capabilities for better communication and user experience.
 
