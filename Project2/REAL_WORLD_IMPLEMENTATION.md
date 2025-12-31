@@ -6,7 +6,7 @@ In the real world, Disney would use **cloud provider APIs** and **billing export
 
 ---
 
-## 📊 Real-World Data Sources
+## Real-World Data Sources
 
 ### **1. AWS (Amazon Web Services)**
 
@@ -124,7 +124,7 @@ response = client.query.usage(
 
 ---
 
-## 🔧 How Our System Handles This (Schema Agnostic Layer)
+## How Our System Handles This (Schema Agnostic Layer)
 
 ### **The Magic: Our Data Source Abstraction**
 
@@ -176,7 +176,7 @@ class AzureDataSource(DataSource):
 
 ---
 
-## 🔄 Real World Workflow
+## Real World Workflow
 
 ### **Step 1: Initial Setup (One Time)**
 
@@ -247,7 +247,7 @@ data_registry.register("azure", azure_source)
 
 ---
 
-## 🏗️ Production Architecture
+## Production Architecture
 
 ### **How It Would Actually Work:**
 
@@ -290,7 +290,7 @@ data_registry.register("azure", azure_source)
 
 ---
 
-## 🔐 Security & Authentication
+## Security & Authentication
 
 ### **How Disney Would Secure This:**
 
@@ -308,32 +308,6 @@ data_registry.register("azure", azure_source)
    - API calls over HTTPS
    - VPC endpoints for AWS
    - Private Google Access for GCP
-
----
-
-## 📋 Interview Talking Points
-
-### **When Asked: "How would Disney actually get their cost data?"**
-
-**Answer:**
-
-"In production, Disney would connect to cloud provider APIs:
-
-1. **AWS**: We'd use the Cost Explorer API or read from Cost and Usage Reports (CUR) exported to S3. The system would authenticate using IAM roles with read only billing permissions.
-
-2. **GCP**: We'd use the Cloud Billing API or query BigQuery if Disney exports billing data there. Authentication via service accounts with billing viewer permissions.
-
-3. **Azure**: We'd use the Cost Management API, authenticating with service principals that have cost reader access.
-
-Our schema-agnostic data access layer abstracts away the differences between these APIs. Each provider returns data in different formats, but our normalizer converts everything to a unified structure. This is what makes the system work across all three providers seamlessly.
-
-When the user clicks 'Run Baseline Analysis', the system:
-- Queries each provider's API for current month's costs
-- Normalizes the data to our unified format
-- Performs analysis to establish the baseline
-- Stores this as the starting point for all future comparisons
-
-This baseline then becomes the reference point for finding savings opportunities."
 
 ---
 
